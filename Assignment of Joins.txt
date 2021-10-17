@@ -1,0 +1,337 @@
+1)  select ename,job,salary*12 as Annual_Salary,employees.deptno,dname
+    -> from employees , departments
+    -> where employees.deptno=departments.deptno and salary*12 > 30000 and job <> 'clerk';
++-------+-----------+---------------+--------+------------+
+| ename | job       | Annual_Salary | deptno | dname      |
++-------+-----------+---------------+--------+------------+
+| JONES | MANAGER   |      35700.00 |     20 | RESEARCH   |
+| BLAKE | MANAGER   |      34200.00 |     30 | SALES      |
+| SCOTT | ANALYST   |      36000.00 |     20 | RESEARCH   |
+| KING  | PRESIDENT |      60000.00 |     10 | ACCOUNTING |
+| FORD  | ANALYST   |      36000.00 |     20 | RESEARCH   |
++-------+-----------+---------------+--------+------------+
+5 rows in set (0.13 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+2) SELECT E1.ENAME,E1.EMPNO,E2.ENAME,E2.EMPNO FROM EMPLOYEES E1,EMPLOYEES E2 WHERE E1.MANAGER =E2.EMPNO;
++--------+-------+-------+-------+
+| ENAME  | EMPNO | ENAME | EMPNO |
++--------+-------+-------+-------+
+| SMITH  |    10 | JONES |    40 |
+| SCOTT  |    80 | JONES |    40 |
+| ADAMS  |   110 | JONES |    40 |
+| JAMES  |   120 | JONES |    40 |
+| WARD   |    30 | BLAKE |    60 |
+| MARTIN |    50 | BLAKE |    60 |
+| FORD   |   130 | BLAKE |    60 |
+| MILLER |   140 | BLAKE |    60 |
+| ALLEN  |    20 | CLARK |    70 |
+| JONES  |    40 | CLARK |    70 |
+| BLAKE  |    60 | CLARK |    70 |
+| TURNER |   100 | CLARK |    70 |
+| CLARK  |    70 | KING  |    90 |
++--------+-------+-------+-------+
+13 rows in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+3)  SELECT ENAME,DNAME FROM EMPLOYEES RIGHT OUTER JOIN DEPARTMENTS ON EMPLOYEES.DEPTNO = DEPARTMENTS.DEPTNO WHERE ENAME IS NULL;
++-------+------------+
+| ENAME | DNAME      |
++-------+------------+
+| NULL  | OPERATIONS |
++-------+------------+
+1 row in set (0.31 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+4) SELECT DNAME, SUM(SALARY) FROM EMPLOYEES,DEPARTMENTS
+    -> WHERE EMPLOYEES.DEPTNO = DEPARTMENTS.DEPTNO
+    -> GROUP BY DNAME;
++------------+-------------+
+| DNAME      | SUM(SALARY) |
++------------+-------------+
+| ACCOUNTING |     8750.00 |
+| RESEARCH   |    10875.00 |
+| SALES      |     9400.00 |
++------------+-------------+
+3 rows in set (0.03 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+5) select ename,dname from employees e,departments d
+    -> where e.deptno = d.deptno;
++--------+------------+
+| ename  | dname      |
++--------+------------+
+| SMITH  | RESEARCH   |
+| ALLEN  | SALES      |
+| WARD   | SALES      |
+| JONES  | RESEARCH   |
+| MARTIN | SALES      |
+| BLAKE  | SALES      |
+| CLARK  | ACCOUNTING |
+| SCOTT  | RESEARCH   |
+| KING   | ACCOUNTING |
+| TURNER | SALES      |
+| ADAMS  | RESEARCH   |
+| JAMES  | SALES      |
+| FORD   | RESEARCH   |
+| MILLER | ACCOUNTING |
++--------+------------+
+14 rows in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+6)  select ename,loc from employees e , departments d
+    -> where e.deptno = d.deptno and commission is not null;
++--------+---------+
+| ename  | loc     |
++--------+---------+
+| ALLEN  | CHENNAI |
+| WARD   | CHENNAI |
+| MARTIN | CHENNAI |
+| TURNER | CHENNAI |
++--------+---------+
+4 rows in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+7) select d.dname
+    -> from employees e, departments d
+    -> where e.deptno = d.deptno and salary = (select min(salary)
+    -> from employees
+    -> where manager is not null);
++----------+
+| dname    |
++----------+
+| RESEARCH |
++----------+
+1 row in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+8)   select d.dname, d.loc
+    -> from employees e,departments d
+    -> where e.deptno=d.deptno and manager = (select empno
+    -> from employees
+    -> where ename = 'SMITH');
+Empty set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+9)  select dname,loc,ename
+    -> from departments,employees
+    -> where empno in (select manager
+    -> from employees
+    -> where empno in (select manager
+    -> from employees
+    -> where job ='salesman'));
++------------+-----------+-------+
+| dname      | loc       | ename |
++------------+-----------+-------+
+| ACCOUNTING | NEW DELHI | CLARK |
+| ACCOUNTING | NEW DELHI | KING  |
+| RESEARCH   | DHANBAD   | CLARK |
+| RESEARCH   | DHANBAD   | KING  |
+| SALES      | CHENNAI   | CLARK |
+| SALES      | CHENNAI   | KING  |
+| OPERATIONS | BANGALORE | CLARK |
+| OPERATIONS | BANGALORE | KING  |
++------------+-----------+-------+
+8 rows in set (0.05 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+10)select employees.*,dname from employees,departments
+    -> where manager in (select manager from employees,departments
+    -> where dname = 'RESEARCH'
+    -> group by manager) and
+    -> job = 'manager' and dname = 'research';
++-------+-------+---------+---------+------------+---------+------------+--------+----------+
+| empno | ename | job     | manager | hiredate   | salary  | commission | deptno | dname    |
++-------+-------+---------+---------+------------+---------+------------+--------+----------+
+|    40 | JONES | MANAGER |      70 | 1981-04-02 | 2975.00 |       NULL |     20 | RESEARCH |
+|    60 | BLAKE | MANAGER |      70 | 1981-05-01 | 2850.00 |       NULL |     30 | RESEARCH |
+|    70 | CLARK | MANAGER |      90 | 1981-06-09 | 2450.00 |       NULL |     10 | RESEARCH |
++-------+-------+---------+---------+------------+---------+------------+--------+----------+
+3 rows in set (0.08 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+11)select * from employees
+    -> where salary< (select salary from employees
+    -> where empno = (select manager from employees where ename='blake'));
++-------+--------+----------+---------+------------+---------+------------+--------+
+| empno | ename  | job      | manager | hiredate   | salary  | commission | deptno |
++-------+--------+----------+---------+------------+---------+------------+--------+
+|    10 | SMITH  | CLERK    |      40 | 1980-12-17 |  800.00 |       NULL |     20 |
+|    20 | ALLEN  | SALESMAN |      70 | 1981-02-20 | 1600.00 |        300 |     30 |
+|    30 | WARD   | SALESMAN |      60 | 1981-02-22 | 1250.00 |        500 |     30 |
+|    50 | MARTIN | SALESMAN |      60 | 1981-09-28 | 1250.00 |       1400 |     30 |
+|   100 | TURNER | SALESMAN |      70 | 1981-09-08 | 1500.00 |          0 |     30 |
+|   110 | ADAMS  | CLERK    |      40 | 1983-01-12 | 1100.00 |       NULL |     20 |
+|   120 | JAMES  | CLERK    |      40 | 1981-12-03 |  950.00 |       NULL |     30 |
+|   140 | MILLER | CLERK    |      60 | 1982-01-23 | 1300.00 |       NULL |     10 |
++-------+--------+----------+---------+------------+---------+------------+--------+
+8 rows in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+12)select d.dname, d.loc
+    -> from employees e, departments d
+    -> where e.deptno=d.deptno and job = 'ANALYST' and manager = (select empno
+    -> from employees
+    -> where ename = 'blake');
++----------+---------+
+| dname    | loc     |
++----------+---------+
+| RESEARCH | DHANBAD |
++----------+---------+
+1 row in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+13) select ename,hiredate,commission
+    -> from employees
+    -> where empno = (select manager
+    -> from employees
+    -> where ename = 'ford');
++-------+------------+------------+
+| ename | hiredate   | commission |
++-------+------------+------------+
+| BLAKE | 1981-05-01 |       NULL |
++-------+------------+------------+
+1 row in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+14) select e.ename, d.dname
+    -> from employees e, departments d
+    -> where e.deptno = d.deptno and salary < (select avg(salary)
+    -> from employees
+    -> where deptno = 30);
++--------+------------+
+| ename  | dname      |
++--------+------------+
+| SMITH  | RESEARCH   |
+| WARD   | SALES      |
+| MARTIN | SALES      |
+| TURNER | SALES      |
+| ADAMS  | RESEARCH   |
+| JAMES  | SALES      |
+| MILLER | ACCOUNTING |
++--------+------------+
+7 rows in set (0.02 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+15) select e.ename, d.dname,d.loc
+    -> from employees e, departments d
+    -> where e.deptno=d.deptno and manager = (select empno
+    -> from employees
+    -> where ename ='Jones');
++-------+----------+---------+
+| ename | dname    | loc     |
++-------+----------+---------+
+| SMITH | RESEARCH | DHANBAD |
+| SCOTT | RESEARCH | DHANBAD |
+| ADAMS | RESEARCH | DHANBAD |
+| JAMES | SALES    | CHENNAI |
++-------+----------+---------+
+4 rows in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+16) select ename, dname
+    -> from employees , departments
+    -> where employees.deptno = departments.deptno and ename like 'S%';
++-------+----------+
+| ename | dname    |
++-------+----------+
+| SMITH | RESEARCH |
+| SCOTT | RESEARCH |
++-------+----------+
+2 rows in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+17) select dname
+    -> from departments
+    -> where deptno not in(select deptno from employees);
++------------+
+| dname      |
++------------+
+| OPERATIONS |
++------------+
+1 row in set (0.06 sec)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+18) select E1.ename,E2.ename,E1.commission,E2.commission
+    -> from employees E1,employees E2
+    -> where E1.commission = E2.commission
+    -> and E1.empno <> E2.empno;
+Empty set (0.00 sec)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+19) select dname
+    -> from employees e ,departments d
+    -> where e.deptno=d.deptno
+    -> and ename is null;
+Empty set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+20)  select ename,job,dname,loc
+    -> from employees,departments
+    -> where job='manager'and loc='chicago'
+    -> group by loc;
+Empty set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+21) select dname
+    -> from employees, departments
+    -> where employees.deptno = departments.deptno and hiredate between '01-JAN-1981' and '31-DEC-1982' and salary > 1800;
+Empty set, 2 warnings (0.06 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+22)select avg(salary)
+    -> from employees
+    -> where salary < (select avg(salary)
+    -> from employees);
++-------------+
+| avg(salary) |
++-------------+
+| 1218.750000 |
++-------------+
+1 row in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+23) select *
+    -> from employees
+    -> where salary*12>1500 and hiredate < '01-JAN-1982';
+Empty set, 1 warning (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+24)select distinct dname,loc,d.deptno
+    -> from employees e1,departments d,employees e2
+    -> where e1.deptno = d.deptno
+    -> and e1.manager = e2.manager
+    -> and e1.empno <> e2.empno;
++------------+-----------+--------+
+| dname      | loc       | deptno |
++------------+-----------+--------+
+| RESEARCH   | DHANBAD   |     20 |
+| SALES      | CHENNAI   |     30 |
+| ACCOUNTING | NEW DELHI |     10 |
++------------+-----------+--------+
+3 rows in set (0.05 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+25)select e.ename Emp_name, e2.ename Manager_name
+    ->     from employees e, employees e2
+    ->  where e.manager= e2.empno;
++----------+--------------+
+| Emp_name | Manager_name |
++----------+--------------+
+| SMITH    | JONES        |
+| SCOTT    | JONES        |
+| ADAMS    | JONES        |
+| JAMES    | JONES        |
+| WARD     | BLAKE        |
+| MARTIN   | BLAKE        |
+| FORD     | BLAKE        |
+| MILLER   | BLAKE        |
+| ALLEN    | CLARK        |
+| JONES    | CLARK        |
+| BLAKE    | CLARK        |
+| TURNER   | CLARK        |
+| CLARK    | KING         |
++----------+--------------+
+13 rows in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+26) select ename, dname
+    -> from employees, departments
+    -> where employees.deptno=departments.deptno and ename like 'S%';
++-------+----------+
+| ename | dname    |
++-------+----------+
+| SMITH | RESEARCH |
+| SCOTT | RESEARCH |
++-------+----------+
+2 rows in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+27) select distinct e.salary,e.ename
+    -> from employees e, employees m
+    -> where e.salary = m.salary and e.ename!=m.ename;
++---------+--------+
+| salary  | ename  |
++---------+--------+
+| 1250.00 | MARTIN |
+| 1250.00 | WARD   |
+| 3000.00 | FORD   |
+| 3000.00 | SCOTT  |
++---------+--------+
+4 rows in set (0.00 sec)
+--------------------------------------------------------------------------------------------------------------------------------
+
